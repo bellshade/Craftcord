@@ -1,0 +1,8 @@
+name: Craftcord
+version: '0.1'
+main: io.github.pixelsam123.craftcord.Craftcord
+api-version: '1.21'
+prefix: Craftcord
+authors: [ PixelSam123 ]
+description: Minecraft chat bridge plugin for Spigot/Paper designed for multiple Discord servers
+website: https://pixelsam123.github.io

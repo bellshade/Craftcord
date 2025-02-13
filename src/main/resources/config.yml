@@ -1,0 +1,4 @@
+token: "yourDiscordBotTokenHere"
+textChannels:
+  - yourTextChannelIdHere1
+  - yourTextChannelIdHere2
