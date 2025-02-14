@@ -3,7 +3,9 @@ package io.github.pixelsam123.craftcord
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.TextChannel
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -15,10 +17,10 @@ class ChatListener(
 
     @EventHandler
     fun onPlayerChat(event: AsyncPlayerChatEvent) {
-        val textChannels = config.getLongList("textChannels")
+        CoroutineScope(Dispatchers.IO).launch {
+            val textChannels = config.getLongList("textChannels")
 
-        for (channelId in textChannels) {
-            runBlocking {
+            for (channelId in textChannels) {
                 val channel = kord.getChannelOf<TextChannel>(Snowflake(channelId))
 
                 if (channel === null) {
