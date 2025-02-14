@@ -9,9 +9,8 @@ Minecraft chat bridge plugin for Spigot/Paper designed for multiple Discord serv
 Code in this repository is still mostly placeholder until plugin spec is fleshed out in the Wiki
 section.
 
-However, it does work in a primitive state (it currently just relays Minecraft messages to specified
-chat channels in the config file, in other words it works one-way) so feel free to use it if you
-want to.
+However, it does work in a primitive state (it works, but with a very limited feature set) so feel
+free to use it if you want to.
 
 ## There are multiple chat bridge plugins to choose from! Who is this one for?
 

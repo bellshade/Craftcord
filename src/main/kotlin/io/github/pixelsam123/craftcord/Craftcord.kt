@@ -1,8 +1,17 @@
 package io.github.pixelsam123.craftcord
 
 import dev.kord.core.Kord
+import dev.kord.core.entity.channel.TextChannel
+import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.KordInitializationException
+import dev.kord.core.on
+import dev.kord.gateway.Intent
+import dev.kord.gateway.PrivilegedIntent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 
 class Craftcord : JavaPlugin() {
@@ -34,12 +43,34 @@ class Craftcord : JavaPlugin() {
         }
 
         if (kord !== null) {
-            server.pluginManager.registerEvents(
-                ChatListener(
-                    textChannels = config.getLongList("textChannels"),
-                    kord = kord!!,
-                ), this
-            )
+            val kord = kord!!
+            val textChannels = config.getLongList("textChannels")
+
+            CoroutineScope(Dispatchers.IO).launch {
+                kord.login {
+                    @OptIn(PrivilegedIntent::class)
+                    intents += Intent.MessageContent
+                }
+            }
+
+            kord.on<MessageCreateEvent> {
+                if (message.channelId.value.toLong() in textChannels) {
+                    val channel = kord.getChannelOf<TextChannel>(message.channelId)
+
+                    if (channel === null) {
+                        logger.warning(
+                            "There is an invalid Discord text channel ID, this message will not be sent to Minecraft."
+                        )
+                    } else if (message.author?.id != kord.selfId) {
+                        Bukkit.broadcastMessage(
+                            "[${channel.name}] <${message.getAuthorAsMember().effectiveName}> ${message.content}"
+                        )
+                    }
+                }
+            }
+
+            server.pluginManager.registerEvents(ChatListener(textChannels, kord), this)
+
             logger.info("Craftcord successfully enabled!")
         }
     }
@@ -48,7 +79,7 @@ class Craftcord : JavaPlugin() {
         logger.info("Disabling Craftcord!")
 
         runBlocking {
-            kord?.logout()
+            kord?.shutdown()
         }
 
         logger.info("Craftcord successfully disabled!")
