@@ -6,21 +6,18 @@ import dev.kord.core.entity.channel.TextChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.AsyncPlayerChatEvent
 
 class ChatListener(
-    private val config: FileConfiguration, private val kord: Kord
+    private val textChannels: List<Long>, private val kord: Kord
 ) : Listener {
 
     @EventHandler
     fun onPlayerChat(event: AsyncPlayerChatEvent) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val textChannels = config.getLongList("textChannels")
-
-            for (channelId in textChannels) {
+        for (channelId in textChannels) {
+            CoroutineScope(Dispatchers.IO).launch {
                 val channel = kord.getChannelOf<TextChannel>(Snowflake(channelId))
 
                 if (channel === null) {

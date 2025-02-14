@@ -34,7 +34,12 @@ class Craftcord : JavaPlugin() {
         }
 
         if (kord !== null) {
-            server.pluginManager.registerEvents(ChatListener(config, kord!!), this)
+            server.pluginManager.registerEvents(
+                ChatListener(
+                    textChannels = config.getLongList("textChannels"),
+                    kord = kord!!,
+                ), this
+            )
             logger.info("Craftcord successfully enabled!")
         }
     }
