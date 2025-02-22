@@ -1,5 +1,6 @@
 package io.github.pixelsam123.craftcord
 
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.message.MessageCreateEvent
@@ -42,43 +43,68 @@ class Craftcord : JavaPlugin() {
             }
         }
 
-        if (kord !== null) {
-            val kord = kord!!
-            val textChannels = config.getLongList("textChannels")
+        if (kord == null) {
+            return
+        }
+        val kord = kord!!
 
-            CoroutineScope(Dispatchers.IO).launch {
-                kord.login {
-                    @OptIn(PrivilegedIntent::class)
-                    intents += Intent.MessageContent
+        val textChannelIds = config.getLongList("textChannels")
+
+        CoroutineScope(Dispatchers.IO).launch {
+            kord.login {
+                @OptIn(PrivilegedIntent::class)
+                intents += Intent.MessageContent
+            }
+        }
+
+        val textChannels = runBlocking {
+            val potentiallyNullChannels = textChannelIds.map { channelId ->
+                kord.getChannelOf<TextChannel>(
+                    Snowflake(channelId)
+                )
+            }
+
+            potentiallyNullChannels.forEachIndexed { index, channel ->
+                if (channel == null) {
+                    logger.warning(
+                        "There is an invalid Discord text channel ID (index $index in config), this channel will not be used."
+                    )
                 }
             }
 
-            kord.on<MessageCreateEvent> {
-                if (message.channelId.value.toLong() in textChannels) {
-                    val channel = kord.getChannelOf<TextChannel>(message.channelId)
+            potentiallyNullChannels.filterNotNull()
+        }
 
-                    if (channel === null) {
-                        logger.warning(
-                            "There is an invalid Discord text channel ID, this message will not be sent to Minecraft."
+        kord.on<MessageCreateEvent> {
+            // TODO: Move this to a separate function
+            if (message.channelId.value.toLong() in textChannelIds) {
+                val channel =
+                    textChannels.find { textChannel -> textChannel.id == message.channelId }
+
+                if (channel == null) {
+                    logger.warning(
+                        "Error getting the text channel of this message, this message will not be sent to Minecraft."
+                    )
+                } else if (message.author?.id != kord.selfId) {
+                    val replyTarget = message.referencedMessage?.getAuthorAsMember()?.effectiveName
+
+                    val baseMessage =
+                        "[${channel.name}]${if (replyTarget == null) "" else " (replies to $replyTarget)"} <${message.getAuthorAsMember().effectiveName}> ${message.content}"
+
+                    if (message.attachments.isEmpty()) {
+                        Bukkit.broadcastMessage(baseMessage)
+                    } else {
+                        Bukkit.broadcastMessage(
+                            "$baseMessage${if (message.content.isEmpty()) "" else " "}(${message.attachments.first().contentType ?: "unknown"} attached)"
                         )
-                    } else if (message.author?.id != kord.selfId) {
-                        if (message.attachments.isNotEmpty()) {
-                            Bukkit.broadcastMessage(
-                                "[${channel.name}] <${message.getAuthorAsMember().effectiveName}> ${message.content} (${message.attachments.first().contentType ?: "unknown"} attached)"
-                            )
-                        } else {
-                            Bukkit.broadcastMessage(
-                                "[${channel.name}] <${message.getAuthorAsMember().effectiveName}> ${message.content}"
-                            )
-                        }
                     }
                 }
             }
-
-            server.pluginManager.registerEvents(ChatListener(textChannels, kord), this)
-
-            logger.info("Craftcord successfully enabled!")
         }
+
+        server.pluginManager.registerEvents(MessageableListener(textChannels), this)
+
+        logger.info("Craftcord successfully enabled!")
     }
 
     override fun onDisable() {
