@@ -62,9 +62,15 @@ class Craftcord : JavaPlugin() {
                             "There is an invalid Discord text channel ID, this message will not be sent to Minecraft."
                         )
                     } else if (message.author?.id != kord.selfId) {
-                        Bukkit.broadcastMessage(
-                            "[${channel.name}] <${message.getAuthorAsMember().effectiveName}> ${message.content}"
-                        )
+                        if (message.attachments.isNotEmpty()) {
+                            Bukkit.broadcastMessage(
+                                "[${channel.name}] <${message.getAuthorAsMember().effectiveName}> ${message.content} (${message.attachments.first().contentType ?: "unknown"} attached)"
+                            )
+                        } else {
+                            Bukkit.broadcastMessage(
+                                "[${channel.name}] <${message.getAuthorAsMember().effectiveName}> ${message.content}"
+                            )
+                        }
                     }
                 }
             }
