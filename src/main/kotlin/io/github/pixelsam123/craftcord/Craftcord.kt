@@ -79,7 +79,7 @@ class Craftcord : JavaPlugin() {
         }
 
         handleDiscordEvents(kord, textChannels)
-        server.pluginManager.registerEvents(MinecraftEventsListener(textChannels), this)
+        server.pluginManager.registerEvents(MinecraftEventsListener(kord, textChannels), this)
 
         logger.info("Craftcord successfully enabled!")
     }
