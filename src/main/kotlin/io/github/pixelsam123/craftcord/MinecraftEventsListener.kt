@@ -29,16 +29,17 @@ class MinecraftEventsListener(
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) {
         val playerCount = Bukkit.getOnlinePlayers().size
+        val playerWord = if (playerCount == 1) "player" else "players"
 
         for (channel in textChannels) {
             CoroutineScope(Dispatchers.IO).launch {
-                channel.createMessage("${event.player.name} joined the server ($playerCount players online)")
+                channel.createMessage("${event.player.name} joined the server ($playerCount $playerWord online)")
             }
         }
 
         CoroutineScope(Dispatchers.IO).launch {
             kord.editPresence {
-                state = "$playerCount players online"
+                state = "$playerCount $playerWord online"
             }
         }
     }
@@ -46,16 +47,17 @@ class MinecraftEventsListener(
     @EventHandler
     fun onPlayerLeave(event: PlayerQuitEvent) {
         val playerCount = Bukkit.getOnlinePlayers().size
+        val playerWord = if (playerCount == 1) "player" else "players"
 
         for (channel in textChannels) {
             CoroutineScope(Dispatchers.IO).launch {
-                channel.createMessage("${event.player.name} left the server ($playerCount players online)")
+                channel.createMessage("${event.player.name} left the server ($playerCount $playerWord online)")
             }
         }
 
         CoroutineScope(Dispatchers.IO).launch {
             kord.editPresence {
-                state = "$playerCount players online"
+                state = "$playerCount $playerWord online"
             }
         }
     }
