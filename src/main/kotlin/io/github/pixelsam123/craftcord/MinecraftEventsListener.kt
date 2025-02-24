@@ -11,7 +11,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 
-class MessageableListener(
+class MinecraftEventsListener(
     private val textChannels: List<TextChannel>
 ) : Listener {
 
