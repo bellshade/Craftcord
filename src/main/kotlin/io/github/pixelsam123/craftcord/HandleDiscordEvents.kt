@@ -7,31 +7,28 @@ import dev.kord.core.event.interaction.GuildChatInputCommandInteractionCreateEve
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import org.bukkit.Bukkit
-import java.util.logging.Logger
 
-fun handleDiscordEvents(kord: Kord, textChannels: List<TextChannel>, textChannelIds: List<Long>, logger: Logger) {
+fun handleDiscordEvents(kord: Kord, textChannels: List<TextChannel>) {
 
     kord.on<MessageCreateEvent> {
-        if (message.channelId.value.toLong() in textChannelIds) {
-            val channel = textChannels.find { textChannel -> textChannel.id == message.channelId }
+        val channel = textChannels.find { textChannel -> textChannel.id == message.channelId }
 
-            if (channel == null) {
-                logger.warning(
-                    "Error getting the text channel of this message, this message will not be sent to Minecraft."
+        if (channel == null) {
+            return@on
+        }
+
+        if (message.author?.id != kord.selfId) {
+            val replyTarget = message.referencedMessage?.getAuthorAsMember()?.effectiveName
+
+            val baseMessage =
+                "[${channel.name}]${if (replyTarget == null) "" else " (replies to $replyTarget)"} <${message.getAuthorAsMember().effectiveName}> ${message.content}"
+
+            if (message.attachments.isEmpty()) {
+                Bukkit.broadcastMessage(baseMessage)
+            } else {
+                Bukkit.broadcastMessage(
+                    "$baseMessage${if (message.content.isEmpty()) "" else " "}(${message.attachments.first().contentType ?: "unknown"} attached)"
                 )
-            } else if (message.author?.id != kord.selfId) {
-                val replyTarget = message.referencedMessage?.getAuthorAsMember()?.effectiveName
-
-                val baseMessage =
-                    "[${channel.name}]${if (replyTarget == null) "" else " (replies to $replyTarget)"} <${message.getAuthorAsMember().effectiveName}> ${message.content}"
-
-                if (message.attachments.isEmpty()) {
-                    Bukkit.broadcastMessage(baseMessage)
-                } else {
-                    Bukkit.broadcastMessage(
-                        "$baseMessage${if (message.content.isEmpty()) "" else " "}(${message.attachments.first().contentType ?: "unknown"} attached)"
-                    )
-                }
             }
         }
     }
