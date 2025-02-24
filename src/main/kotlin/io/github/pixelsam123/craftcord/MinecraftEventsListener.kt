@@ -46,7 +46,11 @@ class MinecraftEventsListener(
 
     @EventHandler
     fun onPlayerLeave(event: PlayerQuitEvent) {
-        val playerCount = Bukkit.getOnlinePlayers().size
+        /**
+         * PlayerQuitEvent is apparently supplied before the online players value decreases
+         * so we decrease it manually
+         */
+        val playerCount = Bukkit.getOnlinePlayers().size - 1
         val playerWord = if (playerCount == 1) "player" else "players"
 
         for (channel in textChannels) {
