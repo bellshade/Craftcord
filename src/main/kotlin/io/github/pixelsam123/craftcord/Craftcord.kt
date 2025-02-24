@@ -3,16 +3,13 @@ package io.github.pixelsam123.craftcord
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.TextChannel
-import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.exception.KordInitializationException
-import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 
 class Craftcord : JavaPlugin() {
@@ -75,33 +72,13 @@ class Craftcord : JavaPlugin() {
             potentiallyNullChannels.filterNotNull()
         }
 
-        kord.on<MessageCreateEvent> {
-            // TODO: Move this to a separate function
-            if (message.channelId.value.toLong() in textChannelIds) {
-                val channel =
-                    textChannels.find { textChannel -> textChannel.id == message.channelId }
-
-                if (channel == null) {
-                    logger.warning(
-                        "Error getting the text channel of this message, this message will not be sent to Minecraft."
-                    )
-                } else if (message.author?.id != kord.selfId) {
-                    val replyTarget = message.referencedMessage?.getAuthorAsMember()?.effectiveName
-
-                    val baseMessage =
-                        "[${channel.name}]${if (replyTarget == null) "" else " (replies to $replyTarget)"} <${message.getAuthorAsMember().effectiveName}> ${message.content}"
-
-                    if (message.attachments.isEmpty()) {
-                        Bukkit.broadcastMessage(baseMessage)
-                    } else {
-                        Bukkit.broadcastMessage(
-                            "$baseMessage${if (message.content.isEmpty()) "" else " "}(${message.attachments.first().contentType ?: "unknown"} attached)"
-                        )
-                    }
-                }
+        for (channel in textChannels) {
+            CoroutineScope(Dispatchers.IO).launch {
+                kord.createGuildChatInputCommand(channel.id, "list", "List online players")
             }
         }
 
+        handleDiscordEvents(kord, textChannels, textChannelIds, logger)
         server.pluginManager.registerEvents(MessageableListener(textChannels), this)
 
         logger.info("Craftcord successfully enabled!")
