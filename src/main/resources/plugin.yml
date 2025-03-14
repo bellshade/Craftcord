@@ -6,3 +6,10 @@ prefix: Craftcord
 authors: [ PixelSam123 ]
 description: Minecraft chat bridge plugin for Spigot/Paper designed for multiple Discord servers
 website: https://pixelsam123.github.io
+
+commands:
+  craftcord:
+    description: Main command for Craftcord
+    usage: /<command> <subcommand> [args]
+    aliases: [ cc ]
+    permission: craftcord.command
