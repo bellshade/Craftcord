@@ -71,7 +71,7 @@ class Craftcord : JavaPlugin() {
 
         for (channel in textChannels) {
             CoroutineScope(Dispatchers.IO).launch {
-                kord.createGuildChatInputCommand(channel.id, "list", "List online players")
+                kord.createGuildChatInputCommand(channel.guildId, "list", "List online players")
             }
         }
 
