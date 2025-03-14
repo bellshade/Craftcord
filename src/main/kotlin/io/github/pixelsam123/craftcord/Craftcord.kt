@@ -6,6 +6,7 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.exception.KordInitializationException
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import io.github.pixelsam123.craftcord.commands.MinecraftCommandsHandler
 import kotlinx.coroutines.*
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -76,6 +77,7 @@ class Craftcord : JavaPlugin() {
 
         handleDiscordEvents(kord, textChannels)
         server.pluginManager.registerEvents(MinecraftEventsListener(this, textChannels), this)
+        getCommand("cc")?.setExecutor(MinecraftCommandsHandler(textChannels))
 
         logger.info("Craftcord successfully enabled!")
     }
