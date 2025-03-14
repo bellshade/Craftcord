@@ -14,13 +14,15 @@ class Craftcord : JavaPlugin() {
     private var kord: Kord? = null
 
     override fun onEnable() {
+        val placeholderToken = "yourDiscordBotTokenHere"
+
         logger.info("Enabling Craftcord!")
 
         saveDefaultConfig()
 
-        val token = config.getString("token") ?: "yourDiscordBotTokenHere"
+        val token = config.getString("token") ?: placeholderToken
 
-        if (token.isBlank()) {
+        if (token == placeholderToken) {
             logger.warning(
                 "Your token is still the default placeholder token, please specify a token in config.yml"
             )
