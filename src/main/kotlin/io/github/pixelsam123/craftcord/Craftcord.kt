@@ -48,6 +48,8 @@ class Craftcord : JavaPlugin() {
             kord.login {
                 @OptIn(PrivilegedIntent::class)
                 intents += Intent.MessageContent
+                @OptIn(PrivilegedIntent::class)
+                intents += Intent.GuildMembers
             }
         }
 
@@ -75,7 +77,7 @@ class Craftcord : JavaPlugin() {
                 val mapFromConfigFile = config
                     .getConfigurationSection("minecraftUsernameToDiscordUsername")
                     ?.getValues(false)
-                    ?.mapValues { value -> value.toString() }
+                    ?.mapValues { (_, discordUsername) -> discordUsername.toString() }
 
                 mapFromConfigFile ?: emptyMap()
             },

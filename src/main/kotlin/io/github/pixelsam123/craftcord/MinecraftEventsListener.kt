@@ -1,7 +1,8 @@
 package io.github.pixelsam123.craftcord
 
 import dev.kord.core.behavior.channel.createWebhook
-import kotlinx.coroutines.flow.first
+import dev.kord.core.behavior.execute
+import kotlinx.coroutines.flow.firstOrNull
 import org.bukkit.Bukkit
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -23,16 +24,25 @@ class MinecraftEventsListener(
         if (discordUsername != null) {
             for (channel in config.textChannels) {
                 launchJob {
-                    val webhook = channel.createWebhook(discordUsername) {
-                        name = discordUsername
-                        avatar = channel.guild.members.first {
-                            it.username == discordUsername
-                        }.avatar?.getImage()
+                    val discordUser = channel.guild.members.firstOrNull {
+                        it.username == discordUsername
                     }
 
-                    webhook.channel.createMessage(event.message)
+                    if (discordUser == null) {
+                        channel.createMessage("<${minecraftUsername}> ${event.message}")
+                    } else {
+                        val webhook = channel.createWebhook(discordUser.effectiveName) {
+                            name = discordUser.effectiveName
+                            avatar = discordUser.avatar?.getImage()
+                        }
 
-                    webhook.delete("Automated Craftcord Delete")
+                        val webhookToken = webhook.token ?: return@launchJob
+
+                        webhook.execute(webhookToken) {
+                            content = event.message
+                        }
+                        webhook.delete(webhookToken, "Automated Craftcord Delete")
+                    }
                 }
             }
         } else {

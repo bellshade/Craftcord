@@ -17,7 +17,7 @@ fun handleDiscordEvents(kord: Kord, textChannels: List<TextChannel>) {
             return@on
         }
 
-        if (message.author?.id != kord.selfId) {
+        if (message.author != null && message.author?.id != kord.selfId) {
             val replyTarget = message.referencedMessage?.getAuthorAsMember()?.effectiveName
 
             val baseMessage =
