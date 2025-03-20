@@ -33,7 +33,9 @@ class MinecraftEventsListener(
             for (channel in config.textChannels) {
                 launchJob {
                     @OptIn(KordExperimental::class)
-                    val discordUser = channel.guild.getMembers(discordUsername, 1).firstOrNull()
+                    val discordUser = channel.guild.members.firstOrNull {
+                        it.username == discordUsername
+                    } ?: channel.guild.getMembers(discordUsername, 1).firstOrNull()
 
                     if (discordUser == null || discordUser.username != discordUsername) {
                         channel.createMessage("<${minecraftUsername}> ${event.message}")
