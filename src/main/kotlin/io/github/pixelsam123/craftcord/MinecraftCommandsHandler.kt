@@ -32,9 +32,9 @@ class MinecraftCommandsHandler(
                 sender.sendMessage(
                     """
                     Text Channels:
-                    ${config.textChannels.joinToString("\n") { "                          - ${it.name}" }}
+${config.textChannels.joinToString("\n") { "                      - ${it.name}" }}
                     Minecraft username to Discord username:
-                    ${
+${
                         config
                             .minecraftUsernameToDiscordUsername
                             .map { (minecraftUsername, discordUsername) -> "                          - $minecraftUsername -> $discordUsername" }
