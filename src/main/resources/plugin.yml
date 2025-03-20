@@ -13,3 +13,7 @@ commands:
     usage: /<command> <subcommand> [args]
     aliases: [ cc ]
     permission: craftcord.command
+permissions:
+  craftcord.command:
+    description: Craftcord commands
+    default: op
