@@ -3,5 +3,5 @@ textChannels:
   - yourTextChannelIdHere1
   - yourTextChannelIdHere2
 minecraftUsernameToDiscordUsername:
-  my_minecraft_username_1: mydiscordusername1
-  my_minecraft_username_2: mydiscordusername2
+  my_minecraft_username_1: "mydiscordusername1"
+  my_minecraft_username_2: "mydiscordusername2"
