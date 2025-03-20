@@ -1,5 +1,7 @@
 package io.github.pixelsam123.craftcord
 
+import dev.kord.core.behavior.channel.createWebhook
+import kotlinx.coroutines.flow.first
 import org.bukkit.Bukkit
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -15,9 +17,29 @@ class MinecraftEventsListener(
 
     @EventHandler
     fun onPlayerChat(event: AsyncPlayerChatEvent) {
-        for (channel in config.textChannels) {
-            launchJob {
-                channel.createMessage("<${event.player.name}> ${event.message}")
+        val minecraftUsername = event.player.name
+        val discordUsername = config.minecraftUsernameToDiscordUsername[minecraftUsername]
+
+        if (discordUsername != null) {
+            for (channel in config.textChannels) {
+                launchJob {
+                    val webhook = channel.createWebhook(discordUsername) {
+                        name = discordUsername
+                        avatar = channel.guild.members.first {
+                            it.username == discordUsername
+                        }.avatar?.getImage()
+                    }
+
+                    webhook.channel.createMessage(event.message)
+
+                    webhook.delete("Automated Craftcord Delete")
+                }
+            }
+        } else {
+            for (channel in config.textChannels) {
+                launchJob {
+                    channel.createMessage("<${minecraftUsername}> ${event.message}")
+                }
             }
         }
     }

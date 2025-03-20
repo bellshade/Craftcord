@@ -44,8 +44,6 @@ class Craftcord : JavaPlugin() {
 
         val kord = kord ?: return
 
-        val textChannelIds = config.getLongList("textChannels")
-
         CoroutineScope(Dispatchers.IO).launch {
             kord.login {
                 @OptIn(PrivilegedIntent::class)
@@ -53,35 +51,43 @@ class Craftcord : JavaPlugin() {
             }
         }
 
-        val textChannels = runBlocking {
-            val potentiallyNullChannels = textChannelIds.map { channelId ->
-                kord.getChannelOf<TextChannel>(
-                    Snowflake(channelId)
-                )
-            }
+        val config = PluginConfig(
+            textChannels = runBlocking {
+                val textChannelIds = config.getLongList("textChannels")
 
-            potentiallyNullChannels.forEachIndexed { index, channel ->
-                if (channel == null) {
-                    logger.warning(
-                        "There is an invalid Discord text channel ID (index $index in config), this channel will not be used."
+                val potentiallyNullChannels = textChannelIds.map { channelId ->
+                    kord.getChannelOf<TextChannel>(
+                        Snowflake(channelId)
                     )
                 }
-            }
 
-            potentiallyNullChannels.filterNotNull()
-        }
+                potentiallyNullChannels.forEachIndexed { index, channel ->
+                    if (channel == null) {
+                        logger.warning(
+                            "There is an invalid Discord text channel ID (index $index in config), this channel will not be used."
+                        )
+                    }
+                }
 
-        for (channel in textChannels) {
+                potentiallyNullChannels.filterNotNull()
+            },
+            minecraftUsernameToDiscordUsername = let {
+                val mapFromConfigFile = config
+                    .getConfigurationSection("minecraftUsernameToDiscordUsername")
+                    ?.getValues(false)
+                    ?.mapValues { value -> value.toString() }
+
+                mapFromConfigFile ?: emptyMap()
+            },
+        )
+
+        for (channel in config.textChannels) {
             CoroutineScope(Dispatchers.IO).launch {
                 kord.createGuildChatInputCommand(channel.guildId, "list", "List online players")
             }
         }
 
-        val config = PluginConfig(
-            textChannels = textChannels,
-        )
-
-        handleDiscordEvents(kord, textChannels)
+        handleDiscordEvents(kord, config.textChannels)
         server.pluginManager.registerEvents(MinecraftEventsListener(this, config), this)
         getCommand("craftcord")?.setExecutor(MinecraftCommandsHandler(config))
 
