@@ -1,5 +1,6 @@
 package io.github.pixelsam123.craftcord
 
+import dev.kord.common.annotation.KordExperimental
 import dev.kord.core.behavior.channel.createWebhook
 import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.execute
@@ -31,21 +32,19 @@ class MinecraftEventsListener(
         } else {
             for (channel in config.textChannels) {
                 launchJob {
-                    val discordUser = channel.guild.members.firstOrNull {
-                        it.username == discordUsername
-                    }
+                    @OptIn(KordExperimental::class)
+                    val discordUser = channel.guild.getMembers(discordUsername, 1).firstOrNull()
 
-                    if (discordUser == null) {
+                    if (discordUser == null || discordUser.username != discordUsername) {
                         channel.createMessage("<${minecraftUsername}> ${event.message}")
                     } else {
-                        val webhook = channel.webhooks.firstOrNull { it.name == discordUsername }
-                            ?: channel.createWebhook(discordUsername)
+                        val webhook = channel.webhooks.firstOrNull { it.name == discordUser.effectiveName }
+                            ?: channel.createWebhook(discordUser.effectiveName)
 
                         val webhookToken = webhook.token ?: return@launchJob
 
                         webhook.edit(webhookToken) {
-                            name = discordUser.effectiveName
-                            avatar = discordUser.avatar?.getImage()
+                            avatar = discordUser.memberAvatar?.getImage()
                         }
 
                         webhook.execute(webhookToken) {
