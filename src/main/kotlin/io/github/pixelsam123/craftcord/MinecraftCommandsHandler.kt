@@ -1,12 +1,11 @@
-package io.github.pixelsam123.craftcord.commands
+package io.github.pixelsam123.craftcord
 
-import dev.kord.core.entity.channel.TextChannel
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabExecutor
 
 class MinecraftCommandsHandler(
-    private val textChannels: List<TextChannel>
+    private val config: PluginConfig
 ) : TabExecutor {
     override fun onTabComplete(
         sender: CommandSender,
@@ -35,7 +34,7 @@ class MinecraftCommandsHandler(
             "read_config" -> {
                 sender.sendMessage("""
                     Text Channels:
-                      ${textChannels.joinToString(", ") { it.name }}
+                      ${config.textChannels.joinToString(", ") { it.name }}
                 """.trimIndent())
                 return true
             }

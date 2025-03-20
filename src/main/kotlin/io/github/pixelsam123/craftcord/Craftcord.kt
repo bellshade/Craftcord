@@ -6,8 +6,10 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.exception.KordInitializationException
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
-import io.github.pixelsam123.craftcord.commands.MinecraftCommandsHandler
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.bukkit.plugin.java.JavaPlugin
 
 class Craftcord : JavaPlugin() {
@@ -75,9 +77,13 @@ class Craftcord : JavaPlugin() {
             }
         }
 
+        val config = PluginConfig(
+            textChannels = textChannels,
+        )
+
         handleDiscordEvents(kord, textChannels)
-        server.pluginManager.registerEvents(MinecraftEventsListener(this, textChannels), this)
-        getCommand("craftcord")?.setExecutor(MinecraftCommandsHandler(textChannels))
+        server.pluginManager.registerEvents(MinecraftEventsListener(this, config), this)
+        getCommand("craftcord")?.setExecutor(MinecraftCommandsHandler(config))
 
         logger.info("Craftcord successfully enabled!")
     }
@@ -90,10 +96,6 @@ class Craftcord : JavaPlugin() {
         }
 
         logger.info("Craftcord successfully disabled!")
-    }
-
-    fun launchJob(block: suspend CoroutineScope.() -> Unit): Job {
-        return CoroutineScope(Dispatchers.IO).launch(block = block)
     }
 
     fun setBotStatus(state: String) {

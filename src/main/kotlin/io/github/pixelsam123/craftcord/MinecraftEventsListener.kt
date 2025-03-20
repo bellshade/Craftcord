@@ -1,6 +1,5 @@
 package io.github.pixelsam123.craftcord
 
-import dev.kord.core.entity.channel.TextChannel
 import org.bukkit.Bukkit
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -10,13 +9,14 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 
 class MinecraftEventsListener(
-    private val plugin: Craftcord, private val textChannels: List<TextChannel>
+    private val plugin: Craftcord,
+    private val config: PluginConfig,
 ) : Listener {
 
     @EventHandler
     fun onPlayerChat(event: AsyncPlayerChatEvent) {
-        for (channel in textChannels) {
-            plugin.launchJob {
+        for (channel in config.textChannels) {
+            launchJob {
                 channel.createMessage("<${event.player.name}> ${event.message}")
             }
         }
@@ -27,8 +27,8 @@ class MinecraftEventsListener(
         val playerCount = Bukkit.getOnlinePlayers().size
         val playerWord = if (playerCount == 1) "player" else "players"
 
-        for (channel in textChannels) {
-            plugin.launchJob {
+        for (channel in config.textChannels) {
+            launchJob {
                 channel.createMessage("${event.player.name} joined the server ($playerCount $playerWord online)")
             }
         }
@@ -45,8 +45,8 @@ class MinecraftEventsListener(
         val playerCount = Bukkit.getOnlinePlayers().size - 1
         val playerWord = if (playerCount == 1) "player" else "players"
 
-        for (channel in textChannels) {
-            plugin.launchJob {
+        for (channel in config.textChannels) {
+            launchJob {
                 channel.createMessage("${event.player.name} left the server ($playerCount $playerWord online)")
             }
         }
@@ -56,8 +56,8 @@ class MinecraftEventsListener(
 
     @EventHandler
     fun onPlayerDeath(event: PlayerDeathEvent) {
-        for (channel in textChannels) {
-            plugin.launchJob {
+        for (channel in config.textChannels) {
+            launchJob {
                 channel.createMessage(event.deathMessage ?: "${event.entity.name} died")
             }
         }
