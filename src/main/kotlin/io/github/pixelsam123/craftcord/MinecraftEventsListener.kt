@@ -1,6 +1,7 @@
 package io.github.pixelsam123.craftcord
 
 import dev.kord.core.behavior.channel.createWebhook
+import dev.kord.core.behavior.edit
 import dev.kord.core.behavior.execute
 import kotlinx.coroutines.flow.firstOrNull
 import org.bukkit.Bukkit
@@ -21,7 +22,13 @@ class MinecraftEventsListener(
         val minecraftUsername = event.player.name
         val discordUsername = config.minecraftUsernameToDiscordUsername[minecraftUsername]
 
-        if (discordUsername != null) {
+        if (discordUsername == null) {
+            for (channel in config.textChannels) {
+                launchJob {
+                    channel.createMessage("<${minecraftUsername}> ${event.message}")
+                }
+            }
+        } else {
             for (channel in config.textChannels) {
                 launchJob {
                     val discordUser = channel.guild.members.firstOrNull {
@@ -31,24 +38,20 @@ class MinecraftEventsListener(
                     if (discordUser == null) {
                         channel.createMessage("<${minecraftUsername}> ${event.message}")
                     } else {
-                        val webhook = channel.createWebhook(discordUser.effectiveName) {
+                        val webhook = channel.webhooks.firstOrNull { it.name == discordUsername }
+                            ?: channel.createWebhook(discordUsername)
+
+                        val webhookToken = webhook.token ?: return@launchJob
+
+                        webhook.edit(webhookToken) {
                             name = discordUser.effectiveName
                             avatar = discordUser.avatar?.getImage()
                         }
 
-                        val webhookToken = webhook.token ?: return@launchJob
-
                         webhook.execute(webhookToken) {
                             content = event.message
                         }
-                        webhook.delete(webhookToken, "Automated Craftcord Delete")
                     }
-                }
-            }
-        } else {
-            for (channel in config.textChannels) {
-                launchJob {
-                    channel.createMessage("<${minecraftUsername}> ${event.message}")
                 }
             }
         }
