@@ -46,7 +46,7 @@ class MinecraftEventsListener(
                         val webhookToken = webhook.token ?: return@launchJob
 
                         webhook.edit(webhookToken) {
-                            avatar = discordUser.memberAvatar?.getImage()
+                            avatar = discordUser.memberAvatar?.getImage() ?: discordUser.avatar?.getImage()
                         }
 
                         webhook.execute(webhookToken) {
