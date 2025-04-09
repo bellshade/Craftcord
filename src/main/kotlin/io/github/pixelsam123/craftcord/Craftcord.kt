@@ -6,6 +6,8 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.exception.KordInitializationException
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.websocket.WebSockets
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,7 +35,9 @@ class Craftcord : JavaPlugin() {
         } else {
             runBlocking {
                 try {
-                    kord = Kord(token)
+                    kord = Kord(token) {
+                        httpClient = HttpClient { install(WebSockets) }
+                    }
                 } catch (err: KordInitializationException) {
                     logger.warning("Error connecting to Discord. Here is the error message:")
                     logger.warning(err.message)

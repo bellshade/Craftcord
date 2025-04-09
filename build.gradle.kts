@@ -21,6 +21,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
     implementation("dev.kord:kord-core:0.15.0")
+    runtimeOnly("io.ktor:ktor-client-java-jvm:3.1.2")
 }
 
 val targetJavaVersion = 21
