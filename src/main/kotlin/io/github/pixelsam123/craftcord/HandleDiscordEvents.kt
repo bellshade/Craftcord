@@ -6,11 +6,15 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.interaction.GuildChatInputCommandInteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
+import kotlinx.coroutines.Job
 import org.bukkit.Bukkit
 
-fun handleDiscordEvents(kord: Kord, textChannels: List<TextChannel>) {
+/**
+ * Returns a list of handles to jobs that HAVE to be cancelled before plugin shutdown
+ */
+fun handleDiscordEvents(kord: Kord, textChannels: List<TextChannel>): List<Job> {
 
-    kord.on<MessageCreateEvent> {
+    val messageListenerJob = kord.on<MessageCreateEvent> {
         val channel = textChannels.find { textChannel -> textChannel.id == message.channelId }
 
         if (channel == null) {
@@ -33,7 +37,7 @@ fun handleDiscordEvents(kord: Kord, textChannels: List<TextChannel>) {
         }
     }
 
-    kord.on<GuildChatInputCommandInteractionCreateEvent> {
+    val commandListenerJob = kord.on<GuildChatInputCommandInteractionCreateEvent> {
         val response = interaction.deferPublicResponse()
 
         val players = Bukkit.getOnlinePlayers()
@@ -43,4 +47,5 @@ fun handleDiscordEvents(kord: Kord, textChannels: List<TextChannel>) {
         }
     }
 
+    return listOf(messageListenerJob, commandListenerJob)
 }
