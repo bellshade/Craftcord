@@ -37,6 +37,7 @@ class Craftcord : JavaPlugin() {
             runBlocking {
                 try {
                     kord = Kord(token) {
+                        enableShutdownHook = false
                         httpClient = HttpClient { install(WebSockets) }
                     }
                 } catch (err: KordInitializationException) {
