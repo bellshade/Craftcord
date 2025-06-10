@@ -6,18 +6,14 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.interaction.GuildChatInputCommandInteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.firstOrNull
 import me.lucko.spark.api.SparkProvider
 import me.lucko.spark.api.statistic.StatisticWindow
 import org.bukkit.Bukkit
 
-/**
- * Returns a list of handles to jobs that HAVE to be cancelled before plugin shutdown
- */
-fun handleDiscordEvents(kord: Kord, textChannels: List<TextChannel>): List<Job> {
+fun handleDiscordEvents(kord: Kord, textChannels: List<TextChannel>) {
 
-    val messageListenerJob = kord.on<MessageCreateEvent> {
+    kord.on<MessageCreateEvent> {
         val channel = textChannels.find { textChannel -> textChannel.id == message.channelId }
 
         if (channel == null) {
@@ -43,7 +39,7 @@ fun handleDiscordEvents(kord: Kord, textChannels: List<TextChannel>): List<Job> 
         }
     }
 
-    val commandListenerJob = kord.on<GuildChatInputCommandInteractionCreateEvent> {
+    kord.on<GuildChatInputCommandInteractionCreateEvent> {
         val response = interaction.deferPublicResponse()
 
         if (interaction.invokedCommandName == "list") {
@@ -79,5 +75,4 @@ fun handleDiscordEvents(kord: Kord, textChannels: List<TextChannel>): List<Job> 
         }
     }
 
-    return listOf(messageListenerJob, commandListenerJob)
 }

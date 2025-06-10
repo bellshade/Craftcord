@@ -8,16 +8,12 @@ import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.WebSockets
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.runBlocking
 import org.bukkit.plugin.java.JavaPlugin
 
 class Craftcord : JavaPlugin() {
 
     private var kord: Kord? = null
-    private var kordLoginJob: Job? = null
-    private var longRunningJobs = emptyList<Job>()
 
     override fun onEnable() {
         val placeholderToken = "yourDiscordBotTokenHere"
@@ -50,7 +46,7 @@ class Craftcord : JavaPlugin() {
 
         val kord = kord ?: return
 
-        kordLoginJob = launchJob {
+        launchJob {
             kord.login {
                 @OptIn(PrivilegedIntent::class)
                 intents += Intent.MessageContent
@@ -96,7 +92,7 @@ class Craftcord : JavaPlugin() {
             }
         }
 
-        longRunningJobs = handleDiscordEvents(kord, config.textChannels)
+        handleDiscordEvents(kord, config.textChannels)
         server.pluginManager.registerEvents(MinecraftEventsListener(this, config), this)
         getCommand("craftcord")?.setExecutor(MinecraftCommandsHandler(config))
 
@@ -107,9 +103,8 @@ class Craftcord : JavaPlugin() {
         logger.info("Disabling Craftcord!")
 
         runBlocking {
-            longRunningJobs.forEach { it.cancelAndJoin() }
+            kord?.logout()
             kord?.shutdown()
-            kordLoginJob?.join()
         }
 
         logger.info("Craftcord successfully disabled!")
