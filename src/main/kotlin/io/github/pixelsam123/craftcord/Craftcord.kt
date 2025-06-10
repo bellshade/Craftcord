@@ -91,6 +91,7 @@ class Craftcord : JavaPlugin() {
         for (channel in config.textChannels) {
             launchJob {
                 kord.createGuildChatInputCommand(channel.guildId, "list", "List online players")
+                kord.createGuildChatInputCommand(guildId = channel.guildId, name = "tps", description = "Get the current TPS of the server")
             }
         }
 

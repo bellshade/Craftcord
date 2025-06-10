@@ -14,6 +14,9 @@ repositories {
     maven("https://oss.sonatype.org/content/groups/public/") {
         name = "sonatype"
     }
+    maven("https://oss.sonatype.org/content/repositories/snapshots") {
+        name = "sonatype-snapshots"
+    }
 }
 
 dependencies {
@@ -22,6 +25,8 @@ dependencies {
 
     implementation("dev.kord:kord-core:0.15.0")
     runtimeOnly("io.ktor:ktor-client-java-jvm:3.1.2")
+
+    compileOnly("me.lucko:spark-api:0.1-SNAPSHOT")
 }
 
 val targetJavaVersion = 21
