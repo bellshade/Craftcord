@@ -7,6 +7,7 @@ import dev.kord.core.event.interaction.GuildChatInputCommandInteractionCreateEve
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.firstOrNull
 import me.lucko.spark.api.SparkProvider
 import me.lucko.spark.api.statistic.StatisticWindow
 import org.bukkit.Bukkit
@@ -24,7 +25,10 @@ fun handleDiscordEvents(kord: Kord, textChannels: List<TextChannel>): List<Job> 
         }
 
         if (message.author != null && message.author?.id != kord.selfId) {
-            val replyTarget = message.referencedMessage?.getAuthorAsMember()?.effectiveName
+            val webhookId = message.referencedMessage?.webhookId
+            val replyTarget = if (webhookId == null) message.referencedMessage?.getAuthorAsMember()?.effectiveName else {
+                channel.webhooks.firstOrNull { it.id == webhookId }?.name
+            }
 
             val baseMessage =
                 "[${channel.name}]${if (replyTarget == null) "" else " (replies to $replyTarget)"} <${message.getAuthorAsMember().effectiveName}> ${message.content}"
