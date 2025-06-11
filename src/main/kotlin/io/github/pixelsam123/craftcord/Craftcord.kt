@@ -6,6 +6,7 @@ import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.exception.KordInitializationException
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import dev.kord.rest.builder.interaction.string
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.WebSockets
 import kotlinx.coroutines.runBlocking
@@ -89,10 +90,16 @@ class Craftcord : JavaPlugin() {
             launchJob {
                 kord.createGuildChatInputCommand(channel.guildId, "list", "List online players")
                 kord.createGuildChatInputCommand(guildId = channel.guildId, name = "tps", description = "Get the current TPS of the server")
+                kord.createGuildChatInputCommand(guildId = channel.guildId, name = "locate", description = "Locate a player", builder = {
+                    string("player", "The name of the player to locate") {
+                        autocomplete = true
+                        required = true
+                    }
+                })
             }
         }
 
-        handleDiscordEvents(kord, config.textChannels)
+        handleDiscordEvents(this, kord, config.textChannels)
         server.pluginManager.registerEvents(MinecraftEventsListener(this, config), this)
         getCommand("craftcord")?.setExecutor(MinecraftCommandsHandler(config))
 
@@ -105,6 +112,11 @@ class Craftcord : JavaPlugin() {
         runBlocking {
             kord?.logout()
             kord?.shutdown()
+        }
+
+        val tempPath = dataFolder.resolve("temp")
+        if (tempPath.exists()) {
+            tempPath.deleteRecursively()
         }
 
         logger.info("Craftcord successfully disabled!")
