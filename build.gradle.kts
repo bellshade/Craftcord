@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "2.1.10"
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("xyz.jpenilla.run-paper") version "2.3.1"
 }
 
 group = "io.github.pixelsam123"
@@ -32,6 +33,14 @@ dependencies {
 val targetJavaVersion = 21
 kotlin {
     jvmToolchain(targetJavaVersion)
+}
+
+tasks.runServer {
+    minecraftVersion("1.21.4")
+
+    downloadPlugins {
+        url("https://ci.lucko.me/job/spark/488/artifact/spark-bukkit/build/libs/spark-1.10.139-bukkit.jar")
+    }
 }
 
 tasks.build {
