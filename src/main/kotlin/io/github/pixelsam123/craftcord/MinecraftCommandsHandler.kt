@@ -5,7 +5,7 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.TabExecutor
 
 class MinecraftCommandsHandler(
-    private val config: PluginConfig
+    private val plugin: Craftcord
 ) : TabExecutor {
     override fun onTabComplete(
         sender: CommandSender, command: Command, label: String, args: Array<String>
@@ -32,15 +32,22 @@ class MinecraftCommandsHandler(
                 sender.sendMessage(
                     """
                     Text Channels:
-${config.textChannels.joinToString("\n") { "                      - ${it.name}" }}
+${plugin.pluginConfig.textChannels.joinToString("\n") { "                      - ${it.name}" }}
                     Minecraft username to Discord username:
 ${
-                        config
+                        plugin.pluginConfig
                             .minecraftUsernameToDiscordUsername
                             .map { (minecraftUsername, discordUsername) -> "                      - $minecraftUsername -> $discordUsername" }
                             .joinToString("\n")
                     }
                 """.trimIndent())
+                return true
+            }
+
+            "reload" -> {
+                sender.sendMessage("Reloading configuration...")
+                plugin.loadConfig()
+                sender.sendMessage("Configuration reloaded successfully.")
                 return true
             }
 
@@ -55,5 +62,4 @@ ${
             }
         }
     }
-
 }
