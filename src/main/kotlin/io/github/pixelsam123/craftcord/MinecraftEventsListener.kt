@@ -14,12 +14,12 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 
 class MinecraftEventsListener(
-    private val plugin: Craftcord,
-    private val config: PluginConfig,
+    private val plugin: Craftcord
 ) : Listener {
 
     @EventHandler
     fun onPlayerChat(event: AsyncPlayerChatEvent) {
+        val config = plugin.pluginConfig
         val minecraftUsername = event.player.name
         val discordUsername = config.minecraftUsernameToDiscordUsername[minecraftUsername]
 
@@ -63,7 +63,7 @@ class MinecraftEventsListener(
         val playerCount = Bukkit.getOnlinePlayers().size
         val playerWord = if (playerCount == 1) "player" else "players"
 
-        for (channel in config.textChannels) {
+        for (channel in plugin.pluginConfig.textChannels) {
             launchJob {
                 channel.createMessage("${event.player.name} joined the server ($playerCount $playerWord online)")
             }
@@ -81,7 +81,7 @@ class MinecraftEventsListener(
         val playerCount = Bukkit.getOnlinePlayers().size - 1
         val playerWord = if (playerCount == 1) "player" else "players"
 
-        for (channel in config.textChannels) {
+        for (channel in plugin.pluginConfig.textChannels) {
             launchJob {
                 channel.createMessage("${event.player.name} left the server ($playerCount $playerWord online)")
             }
@@ -92,7 +92,7 @@ class MinecraftEventsListener(
 
     @EventHandler
     fun onPlayerDeath(event: PlayerDeathEvent) {
-        for (channel in config.textChannels) {
+        for (channel in plugin.pluginConfig.textChannels) {
             launchJob {
                 channel.createMessage(event.deathMessage ?: "${event.entity.name} died")
             }

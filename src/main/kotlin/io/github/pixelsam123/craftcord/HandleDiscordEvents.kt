@@ -4,7 +4,6 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.behavior.interaction.suggest
 import dev.kord.core.behavior.interaction.suggestString
-import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.event.interaction.AutoCompleteInteractionCreateEvent
 import dev.kord.core.event.interaction.GuildChatInputCommandInteractionCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
@@ -21,9 +20,10 @@ import java.awt.image.BufferedImage
 import java.nio.file.Files
 import javax.imageio.ImageIO
 
-fun handleDiscordEvents(craftcord: Craftcord, kord: Kord, textChannels: List<TextChannel>) {
+fun handleDiscordEvents(craftcord: Craftcord, kord: Kord) {
 
     kord.on<MessageCreateEvent> {
+        val textChannels = craftcord.pluginConfig.textChannels
         val channel = textChannels.find { textChannel -> textChannel.id == message.channelId }
 
         if (channel == null) {
