@@ -1,5 +1,8 @@
 # Craftcord
 
+![Craftcord banner](<https://raw.githubusercontent.com/bellshade/Craftcord/refs/heads/main/docs/Craftcord.webp>)
+
+
 Minecraft chat bridge plugin for Spigot/Paper designed for multiple Discord servers  
 Currently serving Minecraft 1.21.4 and up!
 
