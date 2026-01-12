@@ -14,6 +14,10 @@ import org.bukkit.plugin.java.JavaPlugin
 
 class Craftcord : JavaPlugin() {
 
+    var pluginConfig: PluginConfig = PluginConfig(
+        textChannels = emptyList(),
+        minecraftUsernameToDiscordUsername = emptyMap()
+    )
     private var kord: Kord? = null
 
     override fun onEnable() {
@@ -56,52 +60,11 @@ class Craftcord : JavaPlugin() {
             }
         }
 
-        val config = PluginConfig(
-            textChannels = runBlocking {
-                val textChannelIds = config.getLongList("textChannels")
+        loadConfig()
 
-                val potentiallyNullChannels = textChannelIds.map { channelId ->
-                    kord.getChannelOf<TextChannel>(
-                        Snowflake(channelId)
-                    )
-                }
-
-                potentiallyNullChannels.forEachIndexed { index, channel ->
-                    if (channel == null) {
-                        logger.warning(
-                            "There is an invalid Discord text channel ID (index $index in config), this channel will not be used."
-                        )
-                    }
-                }
-
-                potentiallyNullChannels.filterNotNull()
-            },
-            minecraftUsernameToDiscordUsername = let {
-                val mapFromConfigFile = config
-                    .getConfigurationSection("minecraftUsernameToDiscordUsername")
-                    ?.getValues(false)
-                    ?.mapValues { (_, discordUsername) -> discordUsername.toString() }
-
-                mapFromConfigFile ?: emptyMap()
-            },
-        )
-
-        for (channel in config.textChannels) {
-            launchJob {
-                kord.createGuildChatInputCommand(channel.guildId, "list", "List online players")
-                kord.createGuildChatInputCommand(guildId = channel.guildId, name = "tps", description = "Get the current TPS of the server")
-                kord.createGuildChatInputCommand(guildId = channel.guildId, name = "locate", description = "Locate a player", builder = {
-                    string("player", "The name of the player to locate") {
-                        autocomplete = true
-                        required = true
-                    }
-                })
-            }
-        }
-
-        handleDiscordEvents(this, kord, config.textChannels)
-        server.pluginManager.registerEvents(MinecraftEventsListener(this, config), this)
-        getCommand("craftcord")?.setExecutor(MinecraftCommandsHandler(config))
+        handleDiscordEvents(this, kord)
+        server.pluginManager.registerEvents(MinecraftEventsListener(this), this)
+        getCommand("craftcord")?.setExecutor(MinecraftCommandsHandler(this))
 
         logger.info("Craftcord successfully enabled!")
     }
@@ -130,4 +93,54 @@ class Craftcord : JavaPlugin() {
         }
     }
 
+    fun loadConfig() {
+        logger.info("Loading configuration...")
+
+        reloadConfig()
+
+        val config = PluginConfig(
+            textChannels = runBlocking {
+                val textChannelIds = config.getLongList("textChannels")
+
+                val potentiallyNullChannels = textChannelIds.map { channelId ->
+                    kord!!.getChannelOf<TextChannel>(
+                        Snowflake(channelId)
+                    )
+                }
+
+                potentiallyNullChannels.forEachIndexed { index, channel ->
+                    if (channel == null) {
+                        logger.warning(
+                            "There is an invalid Discord text channel ID (index $index in config), this channel will not be used."
+                        )
+                    }
+                }
+
+                potentiallyNullChannels.filterNotNull()
+            },
+            minecraftUsernameToDiscordUsername = let {
+                val mapFromConfigFile = config
+                    .getConfigurationSection("minecraftUsernameToDiscordUsername")
+                    ?.getValues(false)
+                    ?.mapValues { (_, discordUsername) -> discordUsername.toString() }
+
+                mapFromConfigFile ?: emptyMap()
+            },
+        )
+
+        for (channel in config.textChannels) {
+            launchJob {
+                kord!!.createGuildChatInputCommand(channel.guildId, "list", "List online players")
+                kord!!.createGuildChatInputCommand(guildId = channel.guildId, name = "tps", description = "Get the current TPS of the server")
+                kord!!.createGuildChatInputCommand(guildId = channel.guildId, name = "locate", description = "Locate a player", builder = {
+                    string("player", "The name of the player to locate") {
+                        autocomplete = true
+                        required = true
+                    }
+                })
+            }
+        }
+
+        pluginConfig = config
+    }
 }
